@@ -1,6 +1,6 @@
 import * as Device from 'expo-device';
 import { useState } from 'react';
-import { Button, Platform, StyleSheet } from 'react-native';
+import { Animated, Platform, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedIcon } from '@/components/animated-icon';
@@ -33,6 +33,16 @@ function getDevMenuHint() {
 
 export default function HomeScreen() {
   const [showBravoMessage, setShowBravoMessage] = useState(false);
+  const [buttonScale] = useState(() => new Animated.Value(1));
+
+  const animateButton = (toValue: number) => {
+    Animated.spring(buttonScale, {
+      toValue,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 5,
+    }).start();
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -48,10 +58,21 @@ export default function HomeScreen() {
           get started
         </ThemedText>
 
-        <Button
-          title="Cliquez ici"
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Cliquez ici"
           onPress={() => setShowBravoMessage(true)}
-        />
+          onPressIn={() => animateButton(0.96)}
+          onPressOut={() => animateButton(1)}
+        >
+          <Animated.View
+            style={[styles.button, { transform: [{ scale: buttonScale }] }]}
+          >
+            <ThemedText type="smallBold" style={styles.buttonText}>
+              Cliquez ici
+            </ThemedText>
+          </Animated.View>
+        </Pressable>
         {showBravoMessage && (
           <ThemedText type="smallBold" accessibilityLiveRegion="polite">
             Bravo ! Vous avez cliqué sur le bouton.
@@ -102,6 +123,20 @@ const styles = StyleSheet.create({
   },
   code: {
     textTransform: 'uppercase',
+  },
+  button: {
+    minWidth: 180,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.three,
+    borderRadius: 16,
+    backgroundColor: '#208AEF',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    lineHeight: 24,
   },
   stepContainer: {
     gap: Spacing.three,
